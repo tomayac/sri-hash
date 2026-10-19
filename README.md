@@ -25,6 +25,21 @@ Examples:
 - https://tomayac.github.io/sri-hash/?url=https://code.jquery.com/jquery-3.5.0.min.js&algorithm=sha256
 - https://tomayac.github.io/sri-hash/?url=https://code.jquery.com/jquery-3.5.0.min.js&algorithm=sha384,sha512
 
+## Pasted code
+
+Instead of a URL, you can paste code. The link then keeps everything in the
+fragment after `#`, which browsers never send to a server:
+
+| Fragment parameter | Description                                                                                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `code`             | The code, compressed with `deflate-raw` and base64url-encoded. Used while it fits in 600 characters.                                                                   |
+| `digests`          | For longer code: the SHA-256, SHA-384, and SHA-512 digests, concatenated and base64url-encoded, so the link stays at about 250 characters however much code you paste. |
+| `bytes`            | The code size, shown next to the result when the link only has `digests`.                                                                                              |
+| `src`              | Optional file path for the HTML snippet. A path ending in `.css` gives a `<link>` tag.                                                                                 |
+
+Pasted code is hashed as UTF-8 with `LF` line endings. The file you serve must
+match it byte for byte, including whether it ends with a newline.
+
 ## CORS
 
 Hashing runs in the browser with `crypto.subtle.digest()`, so the resource must

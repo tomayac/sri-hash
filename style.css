@@ -51,11 +51,18 @@ form {
   margin-block: 1.5rem;
 }
 
-label[for="url"] {
+.panel label {
   font-weight: 600;
 }
 
-input[type="url"] {
+.panel label span {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+input[type="url"],
+input[type="text"],
+textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
   font: inherit;
@@ -65,13 +72,38 @@ input[type="url"] {
   color: inherit;
 }
 
+textarea {
+  resize: vertical;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.875rem;
+}
+
 fieldset {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.panel {
+  display: grid;
+  gap: 0.5rem;
+}
+
+/* Author `display` values would otherwise override `hidden`. */
+[hidden] {
+  display: none !important;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
 }
 
 legend {

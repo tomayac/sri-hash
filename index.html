@@ -36,16 +36,54 @@
 
     <main>
       <form method="get" action="./">
-        <label for="url">Resource URL</label>
-        <input
-          type="url"
-          id="url"
-          name="url"
-          required
-          placeholder="https://code.jquery.com/jquery-3.5.0.min.js"
-          autocomplete="url"
-        />
-        <fieldset>
+        <fieldset class="options">
+          <legend>Source</legend>
+          <label
+            ><input type="radio" name="source" value="url" checked /> URL</label
+          >
+          <label
+            ><input type="radio" name="source" value="code" /> Pasted
+            code</label
+          >
+        </fieldset>
+        <fieldset id="url-panel" class="panel">
+          <label for="url">Resource URL</label>
+          <input
+            type="url"
+            id="url"
+            name="url"
+            required
+            placeholder="https://code.jquery.com/jquery-3.5.0.min.js"
+            autocomplete="url"
+          />
+        </fieldset>
+        <fieldset id="code-panel" class="panel" disabled hidden>
+          <label for="code">Code</label>
+          <textarea
+            id="code"
+            name="code"
+            required
+            rows="10"
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+            placeholder="console.log('Hello, world!');"
+          ></textarea>
+          <label for="src">File path <span>(optional)</span></label>
+          <input
+            type="text"
+            id="src"
+            name="src"
+            placeholder="script.js"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <p class="hint">
+            The path only fills in the HTML snippet. A path ending in
+            <code>.css</code> gives you a <code>&lt;link&gt;</code> tag.
+          </p>
+        </fieldset>
+        <fieldset class="options">
           <legend>Hash algorithms</legend>
           <label
             ><input type="checkbox" name="algorithm" value="sha256" />
@@ -79,6 +117,17 @@
           Hashing happens in your browser, so the resource must be served with
           an <code>Access-Control-Allow-Origin</code> header. Cross-origin SRI
           needs that header anyway.
+        </p>
+        <p>
+          Links to pasted code keep the code in the fragment after
+          <code>#</code>, which browsers never send to a server. Short code is
+          stored compressed. Code that compresses to more than 600 characters is
+          stored as its hashes only, so the link stays at about 200 characters.
+        </p>
+        <p>
+          Pasted code is hashed as UTF-8 with <code>LF</code> line endings. The
+          file you serve must match it byte for byte, including whether it ends
+          with a newline.
         </p>
       </details>
       <p>
