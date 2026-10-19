@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 Thomas Steiner
 // SPDX-License-Identifier: Apache-2.0
 
+import { highlightAll } from './vendor/microlighter/index.js';
+
 const ALGORITHMS = {
   sha256: 'SHA-256',
   sha384: 'SHA-384',
@@ -53,16 +55,20 @@ const formatBytes = (bytes) =>
     ? `${bytes} bytes`
     : `${(bytes / 1024).toLocaleString('en-US', { maximumFractionDigits: 1 })} KiB`;
 
-const renderCopyable = (label, value) => `
-  <div class="copyable">
-    <h2>${escapeHTML(label)}</h2>
-    <div class="row">
-      <pre><code>${escapeHTML(value)}</code></pre>
-      <button type="button" class="copy" data-value="${escapeHTML(value)}">
-        Copy
-      </button>
-    </div>
-  </div>`;
+const renderCopyButton = (label, value) =>
+  `<button type="button" class="copy" data-label="${escapeHTML(label)}"
+    data-value="${escapeHTML(value)}">${escapeHTML(label)}</button>`;
+
+// Formats the tag the way Prettier would, one attribute per line.
+const formatTag = (url, contentType, integrity) => {
+  const attributes = (first) =>
+    [first, `integrity="${integrity}"`, 'crossorigin="anonymous"']
+      .map((attribute) => `  ${attribute}`)
+      .join('\n');
+  return isStylesheet(url, contentType)
+    ? `<link\n${attributes(`rel="stylesheet"\n  href="${url}"`)}\n/>`
+    : `<script\n${attributes(`src="${url}"`)}\n></script>`;
+};
 
 // The last successfully fetched resource, so toggling an algorithm can rehash
 // without fetching again.
@@ -109,29 +115,34 @@ const generate = async (url, algorithms) => {
 
 const render = async (algorithms) => {
   const { url, buffer, contentType } = fetched;
-  const integrity = (
-    await Promise.all(
-      algorithms.map(
-        async (algorithm) =>
-          `${algorithm}-${toBase64(
-            await crypto.subtle.digest(ALGORITHMS[algorithm], buffer),
-          )}`,
-      ),
-    )
-  ).join(' ');
-
-  const attributes = `integrity="${integrity}" crossorigin="anonymous"`;
-  const tag = isStylesheet(url, contentType)
-    ? `<link rel="stylesheet" href="${url}" ${attributes}>`
-    : `<script src="${url}" ${attributes}></script>`;
+  const hashes = await Promise.all(
+    algorithms.map(async (algorithm) => ({
+      algorithm,
+      value: `${algorithm}-${toBase64(
+        await crypto.subtle.digest(ALGORITHMS[algorithm], buffer),
+      )}`,
+    })),
+  );
+  const integrity = hashes.map(({ value }) => value).join(' ');
+  const tag = formatTag(url, contentType, integrity);
 
   result.innerHTML = `
-    ${renderCopyable('Integrity', integrity)}
-    ${renderCopyable('HTML', tag)}
+    <h2>HTML</h2>
+    <pre><code class="language-html"></code></pre>
+    <div class="buttons">
+      ${renderCopyButton('Copy HTML', tag)}
+      ${hashes
+        .map(({ algorithm, value }) =>
+          renderCopyButton(`Copy ${ALGORITHMS[algorithm]}`, value),
+        )
+        .join('')}
+    </div>
     <p class="meta">
       ${formatBytes(buffer.byteLength)} hashed from
       <a href="${escapeHTML(url)}">${escapeHTML(url)}</a>.
     </p>`;
+  result.querySelector('code').textContent = tag;
+  await highlightAll({ root: result });
 };
 
 result.addEventListener('click', async (event) => {
@@ -146,7 +157,7 @@ result.addEventListener('click', async (event) => {
     button.textContent = 'Failed';
   }
   setTimeout(() => {
-    button.textContent = 'Copy';
+    button.textContent = button.dataset.label;
   }, 1500);
 });
 

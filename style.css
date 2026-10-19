@@ -99,36 +99,30 @@ output {
   display: block;
 }
 
-.copyable h2 {
+output h2 {
   margin-block: 1.25rem 0.5rem;
   font-size: 1rem;
 }
 
-.row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: start;
-}
-
+/* Scrolls sideways so long hashes keep the indentation intact. */
 pre {
-  flex: 1;
-  min-width: 0;
   margin: 0;
   padding: 0.75rem;
   border: 1px solid var(--border);
   border-radius: 0.5rem;
-  background: var(--surface);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  overflow-x: auto;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block-start: 0.75rem;
 }
 
 code {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 0.875rem;
-}
-
-.copy {
-  min-width: 5.5rem;
 }
 
 .error {

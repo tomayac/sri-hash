@@ -32,6 +32,12 @@ be served with an `Access-Control-Allow-Origin` header. Browsers require that
 header for cross-origin SRI anyway, so a resource this tool cannot fetch would
 fail its integrity check on your page, too.
 
+## Credits
+
+Syntax highlighting by
+[MicroLighter](https://github.com/davatron5000/microlighter) (MIT), vendored in
+`vendor/microlighter/` with a small patch to its HTML grammar.
+
 ## License
 
 Apache 2.0
