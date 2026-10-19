@@ -27,7 +27,7 @@ Examples:
 
 ## Pasted code
 
-Instead of a URL, you can paste code. The link then keeps everything in the
+The page also hashes pasted code. Links to pasted code keep everything in the
 fragment after `#`, which browsers never send to a server:
 
 | Fragment parameter | Description                                                                                                                                                            |

@@ -13,5 +13,5 @@ The files here are from
 
 - `embedded-javascript` skips empty `<script>` elements, so the generic `tags`
   rule highlights the attributes of `<script src="…"></script>`.
-- Attribute rules accept any whitespace (`\s`) before an attribute name in place
-  of spaces and tabs only, so attributes on their own lines are highlighted.
+- Attribute rules accept any whitespace (`\s`) before an attribute name,
+  including line breaks, so attributes on their own lines are highlighted.
