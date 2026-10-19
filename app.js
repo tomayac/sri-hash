@@ -64,7 +64,12 @@ const renderCopyable = (label, value) => `
     </div>
   </div>`;
 
+// The last successfully fetched resource, so toggling an algorithm can rehash
+// without fetching again.
+let fetched = null;
+
 const renderError = (message) => {
+  fetched = null;
   result.innerHTML = `<p class="error">${message}</p>`;
 };
 
@@ -94,7 +99,16 @@ const generate = async (url, algorithms) => {
     return;
   }
 
-  const buffer = await response.arrayBuffer();
+  fetched = {
+    url,
+    buffer: await response.arrayBuffer(),
+    contentType: response.headers.get('content-type') ?? '',
+  };
+  await render(algorithms);
+};
+
+const render = async (algorithms) => {
+  const { url, buffer, contentType } = fetched;
   const integrity = (
     await Promise.all(
       algorithms.map(
@@ -107,7 +121,7 @@ const generate = async (url, algorithms) => {
   ).join(' ');
 
   const attributes = `integrity="${integrity}" crossorigin="anonymous"`;
-  const tag = isStylesheet(url, response.headers.get('content-type') ?? '')
+  const tag = isStylesheet(url, contentType)
     ? `<link rel="stylesheet" href="${url}" ${attributes}>`
     : `<script src="${url}" ${attributes}></script>`;
 
@@ -134,6 +148,25 @@ result.addEventListener('click', async (event) => {
   setTimeout(() => {
     button.textContent = 'Copy';
   }, 1500);
+});
+
+// Keeps the output and the bookmarkable URL in sync with the checkboxes.
+form.addEventListener('change', async (event) => {
+  if (event.target.name !== 'algorithm') {
+    return;
+  }
+  const checked = checkboxes.filter((checkbox) => checkbox.checked);
+  if (!checked.length) {
+    event.target.checked = true;
+    return;
+  }
+  const algorithms = checked.map((checkbox) => checkbox.value);
+  const params = new URLSearchParams(location.search);
+  params.set('algorithm', algorithms.join(','));
+  history.replaceState(null, '', `?${params}`);
+  if (fetched) {
+    await render(algorithms);
+  }
 });
 
 const params = new URLSearchParams(location.search);
