@@ -1,0 +1,37 @@
+<!--
+  SPDX-FileCopyrightText: 2026 Thomas Steiner
+  SPDX-License-Identifier: Apache-2.0
+-->
+
+# SRI Hash Generator
+
+A bookmarkable
+[Subresource Integrity](https://developer.mozilla.org/docs/Web/Security/Subresource_Integrity)
+hash generator. Pass the resource and the hash algorithms in the URL, and the
+page fetches the resource and shows the `integrity` value plus a ready-to-paste
+`<script>` or `<link>` tag.
+
+**Live:** https://tomayac.github.io/sri-hash/
+
+## URL parameters
+
+| Parameter   | Description                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `url`       | The resource to hash.                                                                                                          |
+| `algorithm` | `sha256`, `sha384`, or `sha512`. Repeat the parameter or separate values with commas for several hashes. Defaults to `sha384`. |
+
+Examples:
+
+- https://tomayac.github.io/sri-hash/?url=https://code.jquery.com/jquery-3.5.0.min.js&algorithm=sha256
+- https://tomayac.github.io/sri-hash/?url=https://code.jquery.com/jquery-3.5.0.min.js&algorithm=sha384,sha512
+
+## CORS
+
+Hashing runs in the browser with `crypto.subtle.digest()`, so the resource must
+be served with an `Access-Control-Allow-Origin` header. Browsers require that
+header for cross-origin SRI anyway, so a resource this tool cannot fetch would
+fail its integrity check on your page, too.
+
+## License
+
+Apache 2.0

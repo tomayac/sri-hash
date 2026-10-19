@@ -1,0 +1,88 @@
+<!doctype html>
+<!--
+  SPDX-FileCopyrightText: 2026 Thomas Steiner
+  SPDX-License-Identifier: Apache-2.0
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>SRI Hash Generator</title>
+    <meta
+      name="description"
+      content="Bookmarkable Subresource Integrity hash generator. Pass a resource URL and hash algorithms as URL parameters."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>SRI Hash Generator</h1>
+      <p>
+        Generates
+        <a
+          href="https://developer.mozilla.org/docs/Web/Security/Subresource_Integrity"
+          >Subresource Integrity</a
+        >
+        hashes. Every result has its own bookmarkable URL.
+      </p>
+    </header>
+
+    <main>
+      <form method="get" action="./">
+        <label for="url">Resource URL</label>
+        <input
+          type="url"
+          id="url"
+          name="url"
+          required
+          placeholder="https://code.jquery.com/jquery-3.5.0.min.js"
+          autocomplete="url"
+        />
+        <fieldset>
+          <legend>Hash algorithms</legend>
+          <label
+            ><input type="checkbox" name="algorithm" value="sha256" />
+            SHA-256</label
+          >
+          <label
+            ><input type="checkbox" name="algorithm" value="sha384" />
+            SHA-384</label
+          >
+          <label
+            ><input type="checkbox" name="algorithm" value="sha512" />
+            SHA-512</label
+          >
+        </fieldset>
+        <button type="submit">Generate hash</button>
+      </form>
+
+      <output id="result" for="url" aria-live="polite"></output>
+    </main>
+
+    <footer>
+      <details>
+        <summary>URL format</summary>
+        <p>
+          Link to <code>?url=<var>resource</var>&amp;algorithm=sha256</code>.
+          Repeat <code>algorithm</code> or separate values with commas to get
+          several hashes, for example <code>algorithm=sha384,sha512</code>.
+          Without an <code>algorithm</code>, SHA-384 is used.
+        </p>
+        <p>
+          Hashing happens in your browser, so the resource must be served with
+          an <code>Access-Control-Allow-Origin</code> header. Cross-origin SRI
+          needs that header anyway.
+        </p>
+      </details>
+      <p>
+        <a href="https://github.com/tomayac/sri-hash">Source on GitHub</a>
+      </p>
+    </footer>
+  </body>
+</html>
