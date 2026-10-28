@@ -164,6 +164,22 @@ code {
   color: var(--error);
 }
 
+.formats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.formats dt {
+  font-weight: 600;
+}
+
+.formats dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .meta a {
   overflow-wrap: anywhere;
 }

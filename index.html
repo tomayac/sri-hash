@@ -45,6 +45,10 @@
             ><input type="radio" name="source" value="code" /> Pasted
             code</label
           >
+          <label
+            ><input type="radio" name="source" value="convert" /> Convert
+            hash</label
+          >
         </fieldset>
         <fieldset id="url-panel" class="panel">
           <label for="url">Resource URL</label>
@@ -83,7 +87,25 @@
             <code>.css</code> gives you a <code>&lt;link&gt;</code> tag.
           </p>
         </fieldset>
-        <fieldset class="options">
+        <fieldset id="convert-panel" class="panel" disabled hidden>
+          <label for="hash">Hash</label>
+          <input
+            type="text"
+            id="hash"
+            name="hash"
+            required
+            placeholder="sha256-WYtoZ9R5VKyrRu3WqXc9c0uETSIdOpWDTadELV32T5g="
+            autocomplete="off"
+            spellcheck="false"
+            autocapitalize="off"
+          />
+          <p class="hint">
+            An SRI hash like <code>sha384-…</code> becomes hex, and a hex digest
+            becomes an SRI hash. Separate several hashes with spaces. The digest
+            length tells SHA-256, SHA-384, and SHA-512 apart.
+          </p>
+        </fieldset>
+        <fieldset id="algorithm-panel" class="options">
           <legend>Hash algorithms</legend>
           <label
             ><input type="checkbox" name="algorithm" value="sha256" />
@@ -112,6 +134,11 @@
           Repeat <code>algorithm</code> or separate values with commas to get
           several hashes, for example <code>algorithm=sha384,sha512</code>.
           Without an <code>algorithm</code>, SHA-384 is used.
+        </p>
+        <p>
+          Link to <code>?hash=<var>value</var></code> to convert a hash. The
+          value can be an SRI hash, a hex digest, or several of either,
+          separated by spaces.
         </p>
         <p>
           Hashing happens in your browser, so the resource must be served with

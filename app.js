@@ -15,12 +15,20 @@ const MAX_CODE_LENGTH = 600;
 const DEFAULT_SRC = 'script.js';
 
 const form = document.querySelector('form');
-const { url: urlInput, code: codeInput, src: srcInput } = form.elements;
+const {
+  url: urlInput,
+  code: codeInput,
+  src: srcInput,
+  hash: hashInput,
+} = form.elements;
 const sources = [...form.querySelectorAll('[name="source"]')];
 const panels = {
   url: document.querySelector('#url-panel'),
   code: document.querySelector('#code-panel'),
+  convert: document.querySelector('#convert-panel'),
 };
+const algorithmPanel = document.querySelector('#algorithm-panel');
+const submitButton = form.querySelector('button[type="submit"]');
 const checkboxes = [...form.querySelectorAll('[name="algorithm"]')];
 const result = document.querySelector('#result');
 
@@ -113,6 +121,29 @@ const unpackDigests = (packed) => {
   return digests;
 };
 
+// Reads one SRI hash (`sha256-…`), hex digest, or bare base64 digest. A value
+// that reads as both hex and base64 counts as hex. The algorithm follows from
+// the digest length.
+const parseHash = (token) => {
+  const sri = /^(sha256|sha384|sha512)-([^?\s]+)/i.exec(token);
+  let bytes;
+  if (!sri && /^(0x)?[0-9a-f]+$/i.test(token)) {
+    bytes = Uint8Array.fromHex(token.replace(/^0x/i, ''));
+  } else {
+    // Accepts base64url, too, and ignores missing padding.
+    bytes = Uint8Array.fromBase64(
+      (sri ? sri[2] : token).replaceAll('-', '+').replaceAll('_', '/'),
+    );
+  }
+  const algorithm = Object.keys(ALGORITHMS).find(
+    (key) => ALGORITHMS[key].bytes === bytes.length,
+  );
+  if (!algorithm || (sri && sri[1].toLowerCase() !== algorithm)) {
+    throw new RangeError(`Unexpected digest length for ${token}`);
+  }
+  return { algorithm, bytes };
+};
+
 const isStylesheet = (src, contentType = '') =>
   /\bcss\b/.test(contentType) ||
   /\.css$/i.test(new URL(src, location.href).pathname);
@@ -167,6 +198,40 @@ const render = async () => {
     <p class="meta">${formatBytes(bytes)} ${meta}</p>`;
   result.querySelector('code').textContent = tag;
   await highlightAll({ root: result });
+};
+
+const convertHashes = (value) => {
+  current = null;
+  const tokens = value.trim().split(/\s+/).filter(Boolean);
+  const hashes = [];
+  for (const token of tokens) {
+    try {
+      hashes.push(parseHash(token));
+    } catch {
+      renderError(
+        `<code>${escapeHTML(token)}</code> is not a SHA-256, SHA-384, or
+        SHA-512 hash in SRI, hex, or base64 format.`,
+      );
+      return;
+    }
+  }
+  result.innerHTML = hashes
+    .map(({ algorithm, bytes }) => {
+      const { name } = ALGORITHMS[algorithm];
+      const sri = `${algorithm}-${bytes.toBase64()}`;
+      const hex = bytes.toHex();
+      return `
+        <h2>${name}</h2>
+        <dl class="formats">
+          <dt>SRI</dt><dd><code>${sri}</code></dd>
+          <dt>Hex</dt><dd><code>${hex}</code></dd>
+        </dl>
+        <div class="buttons">
+          ${renderCopyButton('Copy SRI', sri)}
+          ${renderCopyButton('Copy hex', hex)}
+        </div>`;
+    })
+    .join('');
 };
 
 const hashURL = async (url) => {
@@ -225,6 +290,10 @@ const setSource = (source) => {
     // A disabled fieldset also skips validation of its `required` fields.
     panel.disabled = panel.hidden = key !== source;
   }
+  // A digest already has its algorithm, so converting needs no choice.
+  algorithmPanel.disabled = algorithmPanel.hidden = source === 'convert';
+  submitButton.textContent =
+    source === 'convert' ? 'Convert hash' : 'Generate hash';
 };
 
 const algorithmQuery = () =>
@@ -256,7 +325,12 @@ const load = async () => {
   }
 
   const url = params.get('url');
-  if (fragment.has('code') || fragment.has('digests')) {
+  const hash = params.get('hash');
+  if (hash) {
+    setSource('convert');
+    hashInput.value = hash;
+    convertHashes(hash);
+  } else if (fragment.has('code') || fragment.has('digests')) {
     setSource('code');
     srcInput.value = fragment.get('src') ?? '';
     try {
@@ -302,7 +376,11 @@ const load = async () => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (panels.url.disabled) {
+  if (!panels.convert.disabled) {
+    const params = new URLSearchParams({ hash: hashInput.value.trim() });
+    history.pushState(null, '', `?${serialize(params)}`);
+    await load();
+  } else if (panels.url.disabled) {
     const src = srcInput.value.trim();
     await hashCode(codeInput.value, src);
     history.pushState(null, '', await linkForCode(codeInput.value, src));
@@ -316,7 +394,9 @@ form.addEventListener('submit', async (event) => {
 form.addEventListener('change', async (event) => {
   if (event.target.name === 'source') {
     setSource(event.target.value);
-    (event.target.value === 'url' ? urlInput : codeInput).focus();
+    ({ url: urlInput, code: codeInput, convert: hashInput })[
+      event.target.value
+    ].focus();
     return;
   }
   if (event.target.name !== 'algorithm') {

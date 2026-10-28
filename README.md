@@ -40,6 +40,15 @@ fragment after `#`, which browsers never send to a server:
 Pasted code is hashed as UTF-8 with `LF` line endings. The file you serve must
 match it byte for byte, including whether it ends with a newline.
 
+## Converting hashes
+
+`?hash=` converts between formats instead of hashing. An SRI hash like
+`sha256-WYtoZ9R5VKyrRu3WqXc9c0uETSIdOpWDTadELV32T5g=` gives its hex digest, and
+a hex digest gives its SRI hash. Separate several hashes with spaces. The digest
+length tells SHA-256, SHA-384, and SHA-512 apart, so hex needs no prefix.
+
+- https://tomayac.github.io/sri-hash/?hash=598b6867d47954acab46edd6a9773d734b844d221d3a95834da7442d5df64f98
+
 ## CORS
 
 Hashing runs in the browser with `crypto.subtle.digest()`, so the resource must
